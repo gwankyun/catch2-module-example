@@ -23,7 +23,6 @@ target_sources(${catch2_module}
 target_include_directories(${catch2_module} PUBLIC include)
 target_link_libraries(${catch2_module} PUBLIC Catch2::Catch2)
 target_compile_features(${catch2_module} PRIVATE cxx_std_23)
-set_target_properties(${catch2_module} PROPERTIES FOLDER module)
 
 set(main main)
 add_executable(${main})
