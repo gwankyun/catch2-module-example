@@ -1,0 +1,1 @@
+# catch2-module-example
