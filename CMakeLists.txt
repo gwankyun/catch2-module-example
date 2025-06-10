@@ -16,6 +16,8 @@ add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:${msvc_options}>")
 set(catch2_module catch2_module)
 add_library(${catch2_module})
 target_sources(${catch2_module}
+  PRIVATE
+    src/catch2_macro.h
   PRIVATE FILE_SET CXX_MODULES FILES
     src/catch2.ixx
     src/catch2.session.ixx)

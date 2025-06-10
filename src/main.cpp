@@ -1,22 +1,13 @@
-﻿module main;
+﻿module;
+#include "catch2_macro.h"
+
+module main;
 import std;
 import catch2;
 
-#ifndef CATCH_STRING
-#  define CATCH_STRING(_str) #_str
-#endif // !CATCH_STRING
-
-#ifndef CATCH_EXPRESSION
-#  define CATCH_EXPRESSION(_expression) _expression, CATCH_STRING(_expression)
-#endif // !CATCH_EXPRESSION
-
-#ifndef REQUIRE
-#  define REQUIRE(_expression) Catch::require(CATCH_EXPRESSION(_expression))
-#endif // !REQUIRE
-
-#ifndef CHECK
-#  define CHECK(_expression) Catch::check(CATCH_EXPRESSION(_expression))
-#endif // !CHECK
+#ifndef ON
+#  define ON CATCH_ON
+#endif // !ON
 
 unsigned int Factorial(unsigned int number)
 {
@@ -82,6 +73,11 @@ void vectors_can_be_sized_and_resized()
     );
 }
 
+void test_capture(int _value)
+{
+    Catch::require ON(_value == 1);
+}
+
 int main(int _argc, char* _argv[])
 {
     using Catch::test_case;
@@ -101,13 +97,16 @@ int main(int _argc, char* _argv[])
     }
 
     test_case(
-        "without macro", "[lambda]",
+        "without capture", "[lambda]",
         []
         {
-            Catch::require(1 + 2 == 3, "1 + 2 == 3");
-            Catch::check(false, "false");
+            Catch::require ON(1 + 2 == 3);
+            Catch::check ON(false);
         }
     );
+
+    int value = 1;
+    test_case("with capture", "[lambda]", [&value] { test_capture(value); });
 
     auto result = Catch::Session().run(_argc, _argv);
     return result;
