@@ -1,13 +1,17 @@
 ﻿module;
-#include "catch2_macro.h"
+#include <catch2/macro.h>
 
-module main;
+module example;
 import std;
 import catch2;
 
-#ifndef ON
+#if !defined(ON) && defined(CATCH_ON)
 #  define ON CATCH_ON
-#endif // !ON
+#else
+#  error "ON can not define."
+#endif
+
+namespace c = Catch;
 
 unsigned int Factorial(unsigned int number)
 {
@@ -16,10 +20,10 @@ unsigned int Factorial(unsigned int number)
 
 void factorials_are_computed()
 {
-    REQUIRE(Factorial(1) == 1);
-    REQUIRE(Factorial(2) == 2);
-    REQUIRE(Factorial(3) == 6);
-    REQUIRE(Factorial(10) == 3628800);
+    c::require ON(Factorial(1) == 1);
+    c::require ON(Factorial(2) == 2);
+    c::require ON(Factorial(3) == 6);
+    c::require ON(Factorial(10) == 3628800);
 }
 
 void vectors_can_be_sized_and_resized()
@@ -28,8 +32,8 @@ void vectors_can_be_sized_and_resized()
     // This setup will be done 4 times in total, once for each section
     std::vector<int> v(5);
 
-    REQUIRE(v.size() == 5);
-    REQUIRE(v.capacity() >= 5);
+    c::require ON(v.size() == 5);
+    c::require ON(v.capacity() >= 5);
 
     session(
         "resizing bigger changes size and capacity",
@@ -37,8 +41,8 @@ void vectors_can_be_sized_and_resized()
         {
             v.resize(10);
 
-            REQUIRE(v.size() == 10);
-            REQUIRE(v.capacity() >= 10);
+            c::require ON(v.size() == 10);
+            c::require ON(v.capacity() >= 10);
         }
     );
     session(
@@ -47,8 +51,8 @@ void vectors_can_be_sized_and_resized()
         {
             v.resize(0);
 
-            REQUIRE(v.size() == 0);
-            REQUIRE(v.capacity() >= 5);
+            c::require ON(v.size() == 0);
+            c::require ON(v.capacity() >= 5);
         }
     );
     session(
@@ -57,8 +61,8 @@ void vectors_can_be_sized_and_resized()
         {
             v.reserve(10);
 
-            REQUIRE(v.size() == 5);
-            REQUIRE(v.capacity() >= 10);
+            c::require ON(v.size() == 5);
+            c::require ON(v.capacity() >= 10);
         }
     );
     session(
@@ -67,46 +71,45 @@ void vectors_can_be_sized_and_resized()
         {
             v.reserve(0);
 
-            REQUIRE(v.size() == 5);
-            REQUIRE(v.capacity() >= 5);
+            c::require ON(v.size() == 5);
+            c::require ON(v.capacity() >= 5);
         }
     );
 }
 
-void test_capture(int _value)
+int test_add(int _i, int _j)
 {
-    Catch::require ON(_value == 1);
+    return _i + _j;
 }
 
 int main(int _argc, char* _argv[])
 {
     using Catch::test_case;
-    test_case("Factorials are computed", "[factorial]", &factorials_are_computed);
-    test_case("vectors can be sized and resized", "[vector]", &vectors_can_be_sized_and_resized);
-
-    {
-        test_case(
-            "base", "[lambda]",
-            []
-            {
-                using namespace std::literals::string_literals;
-                REQUIRE(1 + 2 == 3);
-                REQUIRE("123"s + "456"s == "123456"s);
-            }
-        );
-    }
-
     test_case(
         "without capture", "[lambda]",
         []
         {
-            Catch::require ON(1 + 2 == 3);
-            Catch::check ON(false);
+            using namespace std::literals::string_literals;
+            c::require ON(1 + 2 == 3);
+            c::require ON("123"s + "456"s == "123456"s);
         }
     );
+    test_case("Factorials are computed", "[factorial]", &factorials_are_computed);
+    test_case("vectors can be sized and resized", "[vector]", &vectors_can_be_sized_and_resized);
 
-    int value = 1;
-    test_case("with capture", "[lambda]", [&value] { test_capture(value); });
+    {
+        test_case("lambda", "[lambda]", [] { c::require ON(1 + 2 == 3); });
+    }
+
+    int value = 9;
+    test_case(
+        "with capture", "[lambda]",
+        [&value]
+        {
+            c::check(false, "false", Catch::current());
+            c::require(test_add(value, 1) == 10);
+        }
+    );
 
     auto result = Catch::Session().run(_argc, _argv);
     return result;

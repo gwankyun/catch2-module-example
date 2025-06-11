@@ -1,4 +1,4 @@
-﻿export module main;
+﻿export module compat_example;
 
 export
 {
